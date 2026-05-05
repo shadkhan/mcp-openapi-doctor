@@ -144,6 +144,22 @@ Claude / MCP Client
 
 ## 🚀 Quick Start
 
+Use `pnpm` when available; fall back to `npm` if not.
+
+```bash
+pnpm install
+pnpm build
+pnpm test
+```
+
+Fallback:
+
+```bash
+npm install
+npm run build
+npm test
+```
+
 ### 1. Run directly (no install)
 
 ```bash
