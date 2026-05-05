@@ -35,6 +35,20 @@ npm run build
 npm test
 ```
 
+## Use With npx
+
+After the package is published, you can run MCP OpenAPI Doctor without cloning this repository:
+
+```bash
+npx mcp-openapi-doctor --help
+npx mcp-openapi-doctor inspect ./openapi.yaml
+npx mcp-openapi-doctor generate ./openapi.yaml
+npx mcp-openapi-doctor fix ./openapi.yaml --out .output/ --diff
+npx mcp-openapi-doctor serve ./openapi.yaml --read-only
+```
+
+The `serve` command starts an MCP stdio server and waits for an MCP client such as Claude Desktop.
+
 ## Try The Examples
 
 Inspect API quality:
