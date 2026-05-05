@@ -1,11 +1,9 @@
 #!/usr/bin/env node
 import { Command } from "commander";
 
-import { createDefaultConfig } from "../config/defaults.js";
-import { inspectSpec } from "../doctor/score.js";
-import { loadSpecSource } from "../ingestion/source.js";
-import { parseOpenApiSpec } from "../parser/openapi.js";
-import { createToolPlan } from "../planner/tool-plan.js";
+import { formatDoctorReport } from "../doctor/report.js";
+import { scoreSpec } from "../doctor/scoreSpec.js";
+import { loadSpec } from "../ingestion/loadSpec.js";
 
 const program = new Command();
 
@@ -19,13 +17,15 @@ program
   .description("Inspect an OpenAPI or Swagger spec and print an initial readiness report.")
   .argument("<spec>", "Path or URL to an OpenAPI/Swagger document")
   .action(async (spec: string) => {
-    const config = createDefaultConfig();
-    const source = await loadSpecSource(spec);
-    const document = await parseOpenApiSpec(source);
-    const report = inspectSpec(document, config);
-    const plan = createToolPlan(document, report);
+    const loadedSpec = await loadSpec(spec);
 
-    console.log(JSON.stringify({ report, plan }, null, 2));
+    console.log(`API title: ${loadedSpec.title}`);
+    console.log(`Version: ${loadedSpec.version}`);
+    console.log(`Paths: ${loadedSpec.pathCount}`);
+    console.log(`Operations: ${loadedSpec.operationCount}`);
+    console.log(`OpenAPI version: ${loadedSpec.openApiVersion}`);
+    console.log("");
+    console.log(formatDoctorReport(scoreSpec(loadedSpec)));
   });
 
 program.parseAsync(process.argv).catch((error: unknown) => {

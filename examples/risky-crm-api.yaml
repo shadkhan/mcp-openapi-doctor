@@ -1,0 +1,65 @@
+openapi: 3.0.3
+info:
+  title: Risky CRM API
+  version: 0.2.0
+components:
+  securitySchemes:
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+paths:
+  /contacts:
+    get:
+      responses:
+        "200":
+          description: Contacts returned.
+    post:
+      operationId: createContact
+      summary: Create contact
+      responses:
+        "200":
+          description: Contact created.
+  /contacts/{id}:
+    patch:
+      operationId: updateContact
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+        "200":
+          description: Contact updated.
+          content:
+            application/json:
+              schema:
+                type: object
+        "400":
+          description: Invalid update.
+    delete:
+      operationId: deleteContact
+      summary: Delete contact
+      description: Permanently delete a contact.
+      parameters:
+        - name: id
+          in: path
+          description: Contact ID to delete.
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Contact deleted.
+        "404":
+          description: Contact was not found.

@@ -1,0 +1,72 @@
+openapi: 3.0.3
+info:
+  title: Clean Read API
+  version: 1.0.0
+security:
+  - bearerAuth: []
+paths:
+  /customers:
+    get:
+      operationId: listCustomers
+      summary: List customers
+      description: Retrieve a paginated list of customers.
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of customers to return.
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+      responses:
+        "200":
+          description: Customers returned successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Customer"
+        "401":
+          description: Authentication is required.
+  /customers/{id}:
+    get:
+      operationId: getCustomerById
+      summary: Get customer by ID
+      description: Retrieve one customer profile by its unique ID.
+      parameters:
+        - name: id
+          in: path
+          description: Unique customer ID.
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Customer returned successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+        "404":
+          description: Customer was not found.
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    Customer:
+      type: object
+      required:
+        - id
+        - email
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+          format: email
+        name:
+          type: string

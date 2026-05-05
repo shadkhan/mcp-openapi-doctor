@@ -1,0 +1,44 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Legacy Swagger API",
+    "version": "2.0.0"
+  },
+  "securityDefinitions": {
+    "apiKey": {
+      "type": "apiKey",
+      "name": "X-API-Key",
+      "in": "header"
+    }
+  },
+  "security": [
+    {
+      "apiKey": []
+    }
+  ],
+  "paths": {
+    "/ping": {
+      "get": {
+        "operationId": "ping",
+        "summary": "Ping service",
+        "description": "Check whether the service is reachable.",
+        "responses": {
+          "200": {
+            "description": "Service status.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service unavailable."
+          }
+        }
+      }
+    }
+  }
+}
