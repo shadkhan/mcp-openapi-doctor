@@ -56,8 +56,13 @@ program
   .argument("<spec>", "Path or URL to an OpenAPI/Swagger document")
   .requiredOption("--out <dir>", "Directory for generated advisory output files.")
   .option("--diff", "Write diff.md and diff.json comparing original and cleaned specs.", false)
-  .action(async (spec: string, options: { out: string; diff: boolean }) => {
-    const result = await fixSpec(spec, { outDir: options.out, diff: options.diff });
+  .option("--overlay", "Write mcp-overlay.yaml with advisory x-mcp metadata.", false)
+  .action(async (spec: string, options: { out: string; diff: boolean; overlay: boolean }) => {
+    const result = await fixSpec(spec, {
+      outDir: options.out,
+      diff: options.diff,
+      overlay: options.overlay
+    });
 
     console.log("Generated advisory fix outputs:");
     console.log(`- ${result.cleanedSpecPath}`);
@@ -67,6 +72,9 @@ program
     if (result.diffMarkdownPath !== undefined && result.diffJsonPath !== undefined) {
       console.log(`- ${result.diffMarkdownPath}`);
       console.log(`- ${result.diffJsonPath}`);
+    }
+    if (result.overlayPath !== undefined) {
+      console.log(`- ${result.overlayPath}`);
     }
     console.log("");
     console.log("Original spec was not modified.");

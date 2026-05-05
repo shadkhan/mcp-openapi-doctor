@@ -1,6 +1,7 @@
 export * from "./config/defaults.js";
 export * from "./doctor/detectIssues.js";
 export * from "./doctor/fixSpec.js";
+export * from "./doctor/mcpOverlay.js";
 export * from "./doctor/report.js";
 export * from "./doctor/score.js";
 export * from "./doctor/scoreSpec.js";

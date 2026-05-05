@@ -47,7 +47,8 @@ describe("fix CLI", () => {
       specPath,
       "--out",
       outDir,
-      "--diff"
+      "--diff",
+      "--overlay"
     ]);
 
     expect(stdout).toContain("Original spec was not modified.");
@@ -70,6 +71,7 @@ describe("fix CLI", () => {
     await expect(stat(join(outDir, "summary.md"))).resolves.toBeDefined();
     await expect(stat(join(outDir, "diff.md"))).resolves.toBeDefined();
     await expect(stat(join(outDir, "diff.json"))).resolves.toBeDefined();
+    await expect(stat(join(outDir, "mcp-overlay.yaml"))).resolves.toBeDefined();
 
     const doctorReport = JSON.parse(await readFile(join(outDir, "doctor-report.json"), "utf8")) as {
       score: number;
@@ -99,5 +101,20 @@ describe("fix CLI", () => {
     const diffMarkdown = await readFile(join(outDir, "diff.md"), "utf8");
     expect(diffMarkdown).toContain("# OpenAPI Fix Diff");
     expect(diffMarkdown).toContain("ADDED $.paths.\"/users/{id}\".get.operationId");
+
+    const overlay = parse(await readFile(join(outDir, "mcp-overlay.yaml"), "utf8")) as {
+      "x-mcp": {
+        tools: Record<string, { safety: string; enabled: boolean; reason?: string }>;
+      };
+    };
+
+    expect(overlay["x-mcp"].tools.get_users_id).toMatchObject({
+      safety: "SAFE_READ",
+      enabled: true
+    });
+    expect(overlay["x-mcp"].tools.post_users).toMatchObject({
+      safety: "WRITE",
+      enabled: false
+    });
   });
 });

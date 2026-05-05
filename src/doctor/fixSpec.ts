@@ -5,6 +5,7 @@ import { stringify as stringifyYaml } from "yaml";
 
 import { formatDoctorReport } from "./report.js";
 import { scoreSpec } from "./scoreSpec.js";
+import { createMcpOverlay } from "./mcpOverlay.js";
 import { loadSpec, loadSpecDocument } from "../ingestion/loadSpec.js";
 import { normalizeSpec } from "../ingestion/normalizeSpec.js";
 import { normalizeToolName } from "../planner/nameTools.js";
@@ -21,6 +22,7 @@ const WRITE_METHODS = new Set<HttpMethod>(["post", "put", "patch"]);
 export interface FixSpecOptions {
   outDir: string;
   diff?: boolean;
+  overlay?: boolean;
 }
 
 export interface FixSpecResult {
@@ -31,6 +33,7 @@ export interface FixSpecResult {
   summaryPath: string;
   diffMarkdownPath?: string;
   diffJsonPath?: string;
+  overlayPath?: string;
   report: DoctorReport;
   cleanedReport: DoctorReport;
   fixes: string[];
@@ -54,7 +57,8 @@ export async function fixSpec(specLocation: string, options: FixSpecOptions): Pr
   const originalDocument = deepClone(loadedDocument.document);
   const cleanedDocument = deepClone(loadedDocument.document);
   const fixes = applyMetadataFixes(cleanedDocument);
-  const cleanedReport = scoreSpec(normalizeSpec(cleanedDocument, { source: `${specLocation}#cleaned` }));
+  const cleanedSpec = normalizeSpec(cleanedDocument, { source: `${specLocation}#cleaned` });
+  const cleanedReport = scoreSpec(cleanedSpec);
   const diff = options.diff === true ? diffValues(originalDocument, cleanedDocument) : undefined;
   const outDir = resolve(options.outDir);
 
@@ -66,6 +70,7 @@ export async function fixSpec(specLocation: string, options: FixSpecOptions): Pr
   const summaryPath = resolve(outDir, "summary.md");
   const diffMarkdownPath = options.diff === true ? resolve(outDir, "diff.md") : undefined;
   const diffJsonPath = options.diff === true ? resolve(outDir, "diff.json") : undefined;
+  const overlayPath = options.overlay === true ? resolve(outDir, "mcp-overlay.yaml") : undefined;
 
   const writes = [
     writeFile(cleanedSpecPath, stringifyYaml(cleanedDocument), "utf8"),
@@ -81,6 +86,10 @@ export async function fixSpec(specLocation: string, options: FixSpecOptions): Pr
     );
   }
 
+  if (overlayPath !== undefined) {
+    writes.push(writeFile(overlayPath, stringifyYaml(createMcpOverlay(cleanedSpec)), "utf8"));
+  }
+
   await Promise.all(writes);
 
   return {
@@ -91,6 +100,7 @@ export async function fixSpec(specLocation: string, options: FixSpecOptions): Pr
     summaryPath,
     diffMarkdownPath,
     diffJsonPath,
+    overlayPath,
     report,
     cleanedReport,
     fixes,
