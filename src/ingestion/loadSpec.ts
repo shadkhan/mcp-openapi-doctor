@@ -7,22 +7,32 @@ import type { OpenAPI } from "openapi-types";
 import { parse as parseYaml } from "yaml";
 
 import { resolveRefs } from "../parser/resolveRefs.js";
-import type { NormalizedOpenApiSpec, OpenApiDocument } from "../types/index.js";
+import type {
+  LoadedOpenApiDocument,
+  NormalizedOpenApiSpec,
+  OpenApiDocument,
+  RawSpecSource
+} from "../types/index.js";
 import { normalizeSpec } from "./normalizeSpec.js";
 
 export async function loadSpec(specLocation: string): Promise<NormalizedOpenApiSpec> {
-  const source = await loadRawSpec(specLocation);
-  const document = parseSpecContent(source.content, source.location);
+  const { source, document } = await loadSpecDocument(specLocation);
 
-  await validateSpec(source.location, document);
   const resolvedDocument = await resolveRefs(source.location, document);
 
   return normalizeSpec(resolvedDocument, { source: specLocation });
 }
 
-interface RawSpecSource {
-  location: string;
-  content: string;
+export async function loadSpecDocument(specLocation: string): Promise<LoadedOpenApiDocument> {
+  const source = await loadRawSpec(specLocation);
+  const document = parseSpecContent(source.content, source.location);
+
+  await validateSpec(source.location, document);
+
+  return {
+    source,
+    document
+  };
 }
 
 async function loadRawSpec(specLocation: string): Promise<RawSpecSource> {

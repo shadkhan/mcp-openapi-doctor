@@ -43,6 +43,10 @@ export interface OpenApiDocument {
   openapi?: string;
   swagger?: string;
   info?: OpenApiInfo;
+  servers?: Array<{ url?: string }>;
+  host?: string;
+  basePath?: string;
+  schemes?: string[];
   paths?: Record<string, OpenApiPathItem>;
   [key: string]: unknown;
 }
@@ -73,6 +77,16 @@ export interface NormalizedOpenApiSpec extends NormalizedSpecSummary {
 
 export interface NormalizeSpecOptions {
   source: string;
+}
+
+export interface RawSpecSource {
+  location: string;
+  content: string;
+}
+
+export interface LoadedOpenApiDocument {
+  source: RawSpecSource;
+  document: OpenApiDocument;
 }
 
 export type DoctorIssueSeverity = "error" | "warning" | "info";
@@ -106,4 +120,37 @@ export interface DoctorReport {
   destructiveOperations: number;
   issues: DoctorIssue[];
   issuesBySeverity: Record<DoctorIssueSeverity, DoctorIssue[]>;
+}
+
+export type SafetyLevel = "SAFE_READ" | "WRITE" | "DESTRUCTIVE" | "SENSITIVE";
+
+export interface JsonSchemaObject {
+  type: "object";
+  properties: Record<string, unknown>;
+  required?: string[];
+  additionalProperties?: boolean;
+}
+
+export interface GeneratedTool {
+  name: string;
+  description: string;
+  inputSchema: JsonSchemaObject;
+  safetyLevel: SafetyLevel;
+  method: HttpMethod;
+  path: string;
+  operationId?: string;
+  parameters: GeneratedToolParameter[];
+  hasRequestBody: boolean;
+}
+
+export interface GenerateToolsOptions {
+  readOnly?: boolean;
+}
+
+export type GeneratedToolParameterLocation = "path" | "query" | "header";
+
+export interface GeneratedToolParameter {
+  name: string;
+  location: GeneratedToolParameterLocation;
+  required: boolean;
 }

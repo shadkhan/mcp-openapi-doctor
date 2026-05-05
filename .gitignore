@@ -4,6 +4,7 @@ dist/
 .env.*
 !.env.example
 coverage/
+.output/
 *.log
 npm-debug.log*
 AGENTS.md
