@@ -45,6 +45,66 @@ describe("generateTools", () => {
     expect(generateTools(spec)[0]?.name).toBe("get_users_id_orders");
   });
 
+  it("plans an OpenAPI 3.1 search operation with query parameters", () => {
+    const spec = normalizeSpec(
+      {
+        openapi: "3.1.0",
+        info: { title: "Xquik API", version: "1.0" },
+        paths: {
+          "/api/v1/x/tweets/search": {
+            get: {
+              operationId: "searchTweets",
+              summary: "Search tweets by query, Tweet ID, X status URL, or account date window",
+              tags: ["Tweets"],
+              parameters: [
+                {
+                  name: "q",
+                  in: "query",
+                  required: true,
+                  schema: { type: "string" }
+                },
+                {
+                  name: "queryType",
+                  in: "query",
+                  required: false,
+                  schema: { type: "string", enum: ["Latest", "Top"], default: "Latest" }
+                },
+                {
+                  name: "limit",
+                  in: "query",
+                  required: false,
+                  schema: { type: "integer", default: 20, maximum: 200 }
+                }
+              ],
+              responses: {
+                "200": { description: "Search results" },
+                "401": { description: "Unauthorized" }
+              }
+            }
+          }
+        }
+      },
+      { source: "memory://xquik-openapi" }
+    );
+
+    const tools = generateTools(spec);
+
+    expect(tools).toHaveLength(1);
+    expect(tools[0]).toMatchObject({
+      name: "search_tweets",
+      method: "get",
+      path: "/api/v1/x/tweets/search",
+      operationId: "searchTweets",
+      safetyLevel: "SAFE_READ"
+    });
+    expect(tools[0]?.inputSchema.properties).toMatchObject({
+      q: { type: "string" },
+      queryType: { type: "string", enum: ["Latest", "Top"], default: "Latest" },
+      limit: { type: "integer", default: 20, maximum: 200 }
+    });
+    expect(tools[0]?.inputSchema.required).toEqual(["q"]);
+  });
+
   it("generates input schema from parameters and JSON request body", async () => {
     const spec = await loadSpec("examples/risky-crm-api.yaml");
     const tools = generateTools(spec);
